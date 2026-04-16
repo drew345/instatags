@@ -1,0 +1,9 @@
+tag,language,theme,source_type,source_value,hop_depth,times_seen,customer_intent,fit_for_raw345ig,notes
+#외국인모델,ko,foreign_model,seed,user_provided,0,1,high,high,Initial seed
+#외국인남자모델,ko,foreign_male_model,seed,user_provided,0,1,high,high,Initial seed
+#외국인중년모델,ko,foreign_senior_model,seed,user_provided,0,1,high,high,Initial seed
+#외국인남자배우,ko,foreign_male_actor,seed,user_provided,0,1,high,high,Initial seed
+#foreignmodel,en,foreign_model,seed,project_seed,0,1,medium,medium,English mirror candidate
+#malemodelkorea,en,male_model_korea,seed,project_seed,0,1,high,medium,English discovery candidate
+#foreignactorkorea,en,foreign_actor_korea,seed,project_seed,0,1,high,medium,English discovery candidate
+#seniormodel,en,senior_model,seed,project_seed,0,1,medium,high,English niche candidate

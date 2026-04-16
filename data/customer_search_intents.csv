@@ -1,0 +1,11 @@
+intent,language,priority,notes
+senior male model korea,en,high,Core customer-intent search phrase
+foreign male model korea,en,high,Core customer-intent search phrase
+foreign actor korea,en,high,Core customer-intent search phrase
+silver hair model korea,en,medium,Appearance-based discovery candidate
+middle aged male model korea,en,high,Age-positioning search phrase
+외국인 모델 한국,ko,high,Korean customer-intent phrase to validate
+외국인 남자모델 한국,ko,high,Korean customer-intent phrase to validate
+외국인 배우 한국,ko,high,Korean customer-intent phrase to validate
+중년 남자모델 한국,ko,high,Korean age-positioning phrase to validate
+서울 외국인 모델,ko,medium,Location-specific search phrase to validate

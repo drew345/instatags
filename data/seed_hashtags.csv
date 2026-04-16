@@ -1,0 +1,9 @@
+tag,language,theme,priority,notes
+#외국인모델,ko,foreign_model,high,Core seed provided by user
+#외국인남자모델,ko,foreign_male_model,high,Core seed provided by user
+#외국인중년모델,ko,foreign_senior_model,high,Core seed provided by user
+#외국인남자배우,ko,foreign_male_actor,high,Core seed provided by user
+#foreignmodel,en,foreign_model,medium,English mirror candidate to validate in research
+#malemodelkorea,en,male_model_korea,medium,English discovery candidate to validate in research
+#foreignactorkorea,en,foreign_actor_korea,medium,English discovery candidate to validate in research
+#seniormodel,en,senior_model,medium,English niche candidate to validate in research
