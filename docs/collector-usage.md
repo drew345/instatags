@@ -6,9 +6,10 @@ This collector runs locally on your machine and uses a real browser session.
 
 - opens Instagram in Chromium
 - lets you log in manually
-- visits `raw345ig`
 - visits the seed hashtag pages in `data/targets.json`
-- extracts hashtags from the visible recent posts it opens
+- extracts hashtags from posts under those hashtag pages
+- discovers the account handles behind those posts
+- visits those peer profiles and extracts hashtags from their recent posts
 - writes the results into CSV files
 
 ## Output files
@@ -28,3 +29,4 @@ python scripts\collect_instagram_hashtags.py
 - That profile helps avoid logging in every time
 - Instagram may block or slow some pages, so this collector is meant to be practical rather than aggressive
 - If Instagram changes its page structure, selectors may need to be updated
+- By default it skips crawling your own profile posts because the main goal is to learn from other similar accounts

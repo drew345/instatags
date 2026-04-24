@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>instatags</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">instatags</p>
+      <h1>Hashtag rotation for <span>raw345ig</span></h1>
+      <p class="lede">Generate the next 5 hashtags from the ranked queue, with optional category focus or one forced custom tag.</p>
+    </section>
+
+    <section class="panel controls">
+      <div class="field-group">
+        <label class="field">
+          <span>Focus Categories</span>
+          <input id="categories" type="text" placeholder="modeling, acting, drama, senior">
+        </label>
+        <label class="field">
+          <span>Forced Tag</span>
+          <input id="forcedTag" type="text" placeholder="optional">
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="previewBtn" class="primary">Preview 6 Iterations</button>
+        <button id="nextBtn">Use Next 5</button>
+        <button id="resetBtn">Reset Queue</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Current Queue Status</h2>
+        <p id="statusLine">Loading...</p>
+      </div>
+      <div id="queueHead" class="queue-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Preview / Output</h2>
+        <p>Use preview to inspect the next six cycles without changing the saved queue. Use next to commit one iteration.</p>
+      </div>
+      <div id="results" class="results"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

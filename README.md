@@ -15,7 +15,7 @@ The project is organized into three steps:
 
 ## Current focus
 
-We are currently in step 1: building the initial hashtag universe and research rules.
+We are now focused on step 3: tuning and testing the local selector website. The original harvest and ranking work are preserved as project history and source data, but normal work should not rerun the Instagram collector.
 
 ## Profile
 
@@ -30,13 +30,19 @@ We are currently in step 1: building the initial hashtag universe and research r
 ## Project structure
 
 - `docs/step1-research-workflow.md`: repeatable research process
+- `docs/web-selector.md`: how to run the local hashtag selector website
 - `data/seed_hashtags.csv`: starting hashtag list
 - `data/customer_search_intents.csv`: target customer search phrases
 - `data/hashtag_candidates.csv`: working research dataset
+- `data/ranked_hashtags_v2.csv`: current ranked tag list
+- `data/selector_state.json`: current selector queue state
+- `app/selector.py`: selection engine
+- `app/main.py`: local FastAPI app
+- `web/`: local web interface
 
-## How step 1 will work
+## Historical step 1
 
-Start from the profile and seed hashtags, then collect nearby hashtags from relevant accounts and posts. Keep the exploration focused on:
+The first research pass collected nearby hashtags from relevant accounts and posts. That work is considered complete unless we intentionally decide to refresh the dataset later. The collector should not be part of normal step-3 selector work.
 
 - foreign talent in Korea
 - male model / actor searches
@@ -50,4 +56,10 @@ The first collection pass should stay within two hops:
 
 ## Next action
 
-Use `docs/step1-research-workflow.md` while collecting the first 30-50 candidate hashtags.
+Run the local selector website and review successive iterations:
+
+```powershell
+python scripts\run_app.py
+```
+
+Then open `http://127.0.0.1:8000`.

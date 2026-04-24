@@ -3,7 +3,7 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
-from typing import Dict, Iterable, List, Set
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from playwright.sync_api import BrowserContext, Page, TimeoutError, sync_playwright
 
@@ -85,6 +85,41 @@ def collect_post_links(page: Page, limit: int) -> List[str]:
     return post_links
 
 
+def collect_profile_links(page: Page, limit: int) -> List[str]:
+    hrefs = page.locator("a").evaluate_all(
+        """
+        elements => elements
+          .map(el => el.getAttribute('href'))
+          .filter(Boolean)
+        """
+    )
+    profile_links: List[str] = []
+    seen: Set[str] = set()
+    ignored_prefixes = (
+        "/p/",
+        "/reel/",
+        "/explore/",
+        "/accounts/",
+        "/direct/",
+        "/stories/",
+    )
+    for href in hrefs:
+        if not href.startswith("/"):
+            continue
+        if href.startswith(ignored_prefixes):
+            continue
+        stripped = href.strip("/")
+        if not stripped or "/" in stripped:
+            continue
+        handle = stripped
+        if handle not in seen:
+            profile_links.append(handle)
+            seen.add(handle)
+        if len(profile_links) >= limit:
+            break
+    return profile_links
+
+
 def safe_page_text(page: Page) -> str:
     selectors = ["article", "main", "body"]
     for selector in selectors:
@@ -100,11 +135,19 @@ def safe_page_text(page: Page) -> str:
         return ""
 
 
-def observe_post(page: Page, post_url: str, source_type: str, source_value: str, hop_depth: int) -> List[Dict[str, str]]:
+def observe_post(
+    page: Page,
+    post_url: str,
+    source_type: str,
+    source_value: str,
+    hop_depth: int,
+) -> Tuple[List[Dict[str, str]], Optional[str]]:
     page.goto(post_url, wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(2500)
     text = safe_page_text(page)
     hashtags = extract_hashtags(text)
+    profile_links = collect_profile_links(page, limit=3)
+    discovered_handle = profile_links[0] if profile_links else None
     observations = []
     for tag in hashtags:
         observations.append(
@@ -118,10 +161,16 @@ def observe_post(page: Page, post_url: str, source_type: str, source_value: str,
                 "context_excerpt": text[:300].replace("\n", " ").strip(),
             }
         )
-    return observations
+    return observations, discovered_handle
 
 
-def collect_from_profile(context: BrowserContext, handle: str, limit: int) -> List[Dict[str, str]]:
+def collect_from_profile(
+    context: BrowserContext,
+    handle: str,
+    limit: int,
+    source_type: str,
+    hop_depth: int,
+) -> List[Dict[str, str]]:
     page = context.new_page()
     profile_url = f"https://www.instagram.com/{handle}/"
     print(f"Collecting from profile: {profile_url}")
@@ -130,12 +179,18 @@ def collect_from_profile(context: BrowserContext, handle: str, limit: int) -> Li
     post_links = collect_post_links(page, limit)
     observations: List[Dict[str, str]] = []
     for post_url in post_links:
-        observations.extend(observe_post(page, post_url, "profile_post", handle, 0))
+        post_observations, _ = observe_post(page, post_url, source_type, handle, hop_depth)
+        observations.extend(post_observations)
     page.close()
     return observations
 
 
-def collect_from_hashtag(context: BrowserContext, hashtag: str, limit: int) -> List[Dict[str, str]]:
+def collect_from_hashtag(
+    context: BrowserContext,
+    hashtag: str,
+    limit: int,
+    own_handle: str,
+) -> Tuple[List[Dict[str, str]], List[str]]:
     page = context.new_page()
     slug = slugify_hashtag(hashtag)
     hashtag_url = f"https://www.instagram.com/explore/tags/{slug}/"
@@ -144,10 +199,16 @@ def collect_from_hashtag(context: BrowserContext, hashtag: str, limit: int) -> L
     page.wait_for_timeout(3500)
     post_links = collect_post_links(page, limit)
     observations: List[Dict[str, str]] = []
+    discovered_handles: List[str] = []
+    seen_handles: Set[str] = set()
     for post_url in post_links:
-        observations.extend(observe_post(page, post_url, "hashtag_page", f"#{slug}", 1))
+        post_observations, discovered_handle = observe_post(page, post_url, "hashtag_page", f"#{slug}", 1)
+        observations.extend(post_observations)
+        if discovered_handle and discovered_handle.lower() != own_handle.lower() and discovered_handle.lower() not in seen_handles:
+            discovered_handles.append(discovered_handle)
+            seen_handles.add(discovered_handle.lower())
     page.close()
-    return observations
+    return observations, discovered_handles
 
 
 def write_raw_observations(rows: Iterable[Dict[str, str]]) -> None:
@@ -200,8 +261,10 @@ def main() -> None:
     targets = load_targets()
     handle = str(targets["profile_handle"])
     seed_hashtags = [str(tag) for tag in targets["seed_hashtags"]]
-    profile_post_limit = int(targets.get("profile_post_limit", 8))
+    include_own_profile_posts = bool(targets.get("include_own_profile_posts", False))
     hashtag_post_limit = int(targets.get("hashtag_post_limit", 6))
+    peer_profile_limit = int(targets.get("peer_profile_limit", 12))
+    peer_profile_post_limit = int(targets.get("peer_profile_post_limit", 4))
 
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
@@ -215,9 +278,35 @@ def main() -> None:
         landing_page.close()
 
         observations: List[Dict[str, str]] = []
-        observations.extend(collect_from_profile(context, handle, profile_post_limit))
+        discovered_peer_handles: List[str] = []
         for hashtag in seed_hashtags:
-            observations.extend(collect_from_hashtag(context, hashtag, hashtag_post_limit))
+            hashtag_observations, hashtag_handles = collect_from_hashtag(context, hashtag, hashtag_post_limit, handle)
+            observations.extend(hashtag_observations)
+            for discovered_handle in hashtag_handles:
+                if discovered_handle.lower() not in {h.lower() for h in discovered_peer_handles}:
+                    discovered_peer_handles.append(discovered_handle)
+
+        if include_own_profile_posts:
+            observations.extend(
+                collect_from_profile(
+                    context,
+                    handle,
+                    peer_profile_post_limit,
+                    "own_profile_post",
+                    0,
+                )
+            )
+
+        for peer_handle in discovered_peer_handles[:peer_profile_limit]:
+            observations.extend(
+                collect_from_profile(
+                    context,
+                    peer_handle,
+                    peer_profile_post_limit,
+                    "peer_profile_post",
+                    2,
+                )
+            )
 
         context.close()
 

@@ -6,6 +6,8 @@
     "외국인중년모델",
     "외국인남자배우"
   ],
-  "profile_post_limit": 8,
-  "hashtag_post_limit": 6
+  "include_own_profile_posts": false,
+  "hashtag_post_limit": 6,
+  "peer_profile_limit": 12,
+  "peer_profile_post_limit": 4
 }

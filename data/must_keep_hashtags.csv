@@ -1,0 +1,10 @@
+tag,language,source,notes
+#외국인모델,ko,user_core,User must-keep tag; also present in harvested data
+#외국인남자모델,ko,user_core,User must-keep tag; also present in harvested data
+#외국인중년모델,ko,user_core,User must-keep tag; also present in harvested data
+#외국인남자배우,ko,user_core,User must-keep tag; also present in harvested data
+#외국인시니어모델,ko,user_core,User must-keep tag; also present in harvested data
+#외국인중년배우,ko,user_core,User must-keep tag; also present in harvested data
+#외국인캐스팅,ko,user_core,User must-keep tag; missing from first harvested dataset and should be retained manually
+#중년모델,ko,user_core,User must-keep tag; also present in harvested data
+#시니어모델,ko,user_core,User must-keep tag; also present in harvested data
