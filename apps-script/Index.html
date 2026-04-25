@@ -1,0 +1,452 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --bg: #f7f2e9;
+      --panel: rgba(255, 253, 250, 0.96);
+      --ink: #1f241f;
+      --muted: #647064;
+      --line: rgba(31, 36, 31, 0.12);
+      --accent: #b2542a;
+      --accent-2: #274c77;
+      --pill: #efe4d4;
+      --tag-bg: #fff3e7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: linear-gradient(180deg, #fffaf3 0%, var(--bg) 100%);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .page {
+      width: min(780px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 44px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .panel {
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: 0 12px 28px rgba(66, 53, 28, 0.06);
+    }
+
+    .primary-action { margin-bottom: 12px; }
+
+    .output-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .field-group {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field span {
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffdfa;
+      font: inherit;
+      color: var(--ink);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 16px;
+      font: inherit;
+      color: var(--ink);
+      background: #fffdfa;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff7ef;
+      border-color: transparent;
+    }
+
+    .generate-btn {
+      width: 100%;
+      min-height: 58px;
+      font-size: 1.24rem;
+      font-weight: 700;
+    }
+
+    .copy-btn { min-width: 92px; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .section-header p,
+    #statusLine,
+    .muted {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .queue-list,
+    .tag-list,
+    .meta-list,
+    .current-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill,
+    .queue-pill,
+    .meta-pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: var(--pill);
+      border: 1px solid rgba(31, 36, 31, 0.08);
+    }
+
+    .current-tags { min-height: 56px; }
+
+    .tag {
+      font-weight: 700;
+      font-size: 1.02rem;
+      background: var(--tag-bg);
+      color: #743215;
+      overflow-wrap: anywhere;
+    }
+
+    .current-tags .tag {
+      font-size: 1.16rem;
+      padding: 10px 13px;
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .result-card {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(247, 242, 233, 0.96));
+    }
+
+    .result-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .tag-list { margin: 12px 0 0; }
+
+    .detail-grid {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail-row {
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .detail-row strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .page-footer {
+      margin-top: 22px;
+      color: var(--muted);
+    }
+
+    .page-footer h1 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    .page-footer h1 span { color: var(--accent-2); }
+
+    .page-footer p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 18px, 780px);
+        padding-top: 12px;
+      }
+
+      .field-group { grid-template-columns: 1fr; }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .panel {
+        padding: 14px;
+        border-radius: 12px;
+      }
+
+      .current-tags .tag { font-size: 1.05rem; }
+
+      .button-row button { flex: 1 1 auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">instatags</p>
+
+    <section class="primary-action">
+      <button id="nextBtn" class="primary generate-btn">Generate Next 5</button>
+    </section>
+
+    <section class="panel">
+      <div class="output-actions">
+        <p id="outputStatus" class="muted">No hashtags generated yet.</p>
+        <button id="copyBtn" class="copy-btn" disabled>Copy</button>
+      </div>
+      <div id="currentTags" class="current-tags"></div>
+      <div id="currentDetails" class="detail-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="field-group">
+        <label class="field">
+          <span>Focus Categories</span>
+          <input id="categories" type="text" placeholder="modeling, acting, drama, senior">
+        </label>
+        <label class="field">
+          <span>Forced Tag</span>
+          <input id="forcedTag" type="text" placeholder="optional">
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="button-row">
+        <button id="previewBtn">Preview 6 Iterations</button>
+        <button id="resetBtn">Reset Queue</button>
+      </div>
+      <div id="results" class="results"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Current Queue Status</h2>
+        <p id="statusLine">Loading...</p>
+      </div>
+      <div id="queueHead" class="queue-list"></div>
+    </section>
+
+    <footer class="page-footer">
+      <h1>Hashtag rotation for <span>raw345ig</span></h1>
+      <p>Generate the next 5 hashtags from the ranked queue, with optional category focus or one forced custom tag.</p>
+    </footer>
+  </main>
+
+  <script>
+    let latestTags = [];
+
+    function runServer(name, args) {
+      return new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)[name].apply(null, args || []);
+      });
+    }
+
+    function getControls() {
+      return {
+        categories: document.getElementById('categories').value.trim(),
+        forcedTag: document.getElementById('forcedTag').value.trim()
+      };
+    }
+
+    function renderQueue(queueHead) {
+      const container = document.getElementById('queueHead');
+      container.innerHTML = '';
+      queueHead.forEach(tag => {
+        const pill = document.createElement('div');
+        pill.className = 'queue-pill';
+        pill.textContent = tag;
+        container.appendChild(pill);
+      });
+    }
+
+    function renderTagPills(container, tags) {
+      container.innerHTML = '';
+      tags.forEach(tag => {
+        const item = document.createElement('div');
+        item.className = 'pill tag';
+        item.textContent = tag;
+        container.appendChild(item);
+      });
+    }
+
+    function renderDetails(container, details) {
+      container.innerHTML = '';
+      details.forEach(detail => {
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        const headline = document.createElement('strong');
+        headline.textContent = detail.tag;
+        row.appendChild(headline);
+        const line = document.createElement('div');
+        const parts = [];
+        if (detail.rank) parts.push(`rank ${detail.rank}`);
+        if (detail.categories && detail.categories.length) parts.push(detail.categories.join(' / '));
+        line.className = 'muted';
+        line.textContent = parts.join(' · ');
+        row.appendChild(line);
+        container.appendChild(row);
+      });
+    }
+
+    function renderCurrentSelection(result) {
+      latestTags = result.selectedTags || [];
+      renderTagPills(document.getElementById('currentTags'), latestTags);
+      renderDetails(document.getElementById('currentDetails'), result.selectedDetails || []);
+      document.getElementById('outputStatus').textContent = `Iteration ${result.iteration}`;
+      document.getElementById('copyBtn').disabled = latestTags.length === 0;
+    }
+
+    function renderSelections(results) {
+      const container = document.getElementById('results');
+      container.innerHTML = '';
+      results.forEach(result => {
+        const card = document.createElement('article');
+        card.className = 'result-card';
+        const title = document.createElement('h3');
+        title.textContent = `Iteration ${result.iteration}`;
+        card.appendChild(title);
+
+        const tagList = document.createElement('div');
+        tagList.className = 'tag-list';
+        renderTagPills(tagList, result.selectedTags || []);
+        card.appendChild(tagList);
+
+        const detailGrid = document.createElement('div');
+        detailGrid.className = 'detail-grid';
+        renderDetails(detailGrid, result.selectedDetails || []);
+        card.appendChild(detailGrid);
+        container.appendChild(card);
+      });
+    }
+
+    async function loadStatus() {
+      const status = await runServer('getStatus');
+      document.getElementById('statusLine').textContent = `Saved queue is currently at iteration ${status.iteration} with ${status.activeDeckSize} active tags.`;
+      renderQueue(status.queueHead);
+    }
+
+    async function previewIterations() {
+      const controls = getControls();
+      const results = await runServer('previewNext', [6, controls.categories, controls.forcedTag]);
+      renderSelections(results);
+    }
+
+    async function useNext() {
+      const button = document.getElementById('nextBtn');
+      button.disabled = true;
+      try {
+        const controls = getControls();
+        const data = await runServer('generateNext', [controls.categories, controls.forcedTag]);
+        renderCurrentSelection(data);
+        renderQueue(data.queueHead);
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('statusLine').textContent = `Saved queue is currently at iteration ${data.iteration} with ${data.activeDeckSize} active tags.`;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function resetQueue() {
+      const status = await runServer('resetBakedState');
+      latestTags = [];
+      document.getElementById('currentTags').innerHTML = '';
+      document.getElementById('currentDetails').innerHTML = '';
+      document.getElementById('copyBtn').disabled = true;
+      document.getElementById('outputStatus').textContent = 'No hashtags generated yet.';
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('statusLine').textContent = `Saved queue reset to iteration ${status.iteration} with ${status.activeDeckSize} active tags.`;
+      renderQueue(status.queueHead);
+    }
+
+    async function copyTags() {
+      if (!latestTags.length) return;
+      await navigator.clipboard.writeText(latestTags.join(' '));
+      const button = document.getElementById('copyBtn');
+      button.textContent = 'Copied';
+      window.setTimeout(() => button.textContent = 'Copy', 1200);
+    }
+
+    document.getElementById('previewBtn').addEventListener('click', previewIterations);
+    document.getElementById('nextBtn').addEventListener('click', useNext);
+    document.getElementById('resetBtn').addEventListener('click', resetQueue);
+    document.getElementById('copyBtn').addEventListener('click', copyTags);
+
+    loadStatus();
+  </script>
+</body>
+</html>

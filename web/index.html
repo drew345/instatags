@@ -8,10 +8,21 @@
 </head>
 <body>
   <main class="page">
-    <section class="hero">
+    <header class="app-header">
       <p class="eyebrow">instatags</p>
-      <h1>Hashtag rotation for <span>raw345ig</span></h1>
-      <p class="lede">Generate the next 5 hashtags from the ranked queue, with optional category focus or one forced custom tag.</p>
+    </header>
+
+    <section class="primary-action">
+      <button id="nextBtn" class="primary generate-btn">Generate Next 5</button>
+    </section>
+
+    <section class="panel output-panel">
+      <div class="output-actions">
+        <p id="outputStatus" class="muted">No hashtags generated yet.</p>
+        <button id="copyBtn" class="copy-btn" disabled>Copy</button>
+      </div>
+      <div id="currentTags" class="current-tags"></div>
+      <div id="currentDetails" class="detail-grid compact-details"></div>
     </section>
 
     <section class="panel controls">
@@ -25,12 +36,14 @@
           <input id="forcedTag" type="text" placeholder="optional">
         </label>
       </div>
+    </section>
 
+    <section class="panel secondary-actions">
       <div class="button-row">
-        <button id="previewBtn" class="primary">Preview 6 Iterations</button>
-        <button id="nextBtn">Use Next 5</button>
+        <button id="previewBtn">Preview 6 Iterations</button>
         <button id="resetBtn">Reset Queue</button>
       </div>
+      <div id="results" class="results"></div>
     </section>
 
     <section class="panel">
@@ -41,13 +54,10 @@
       <div id="queueHead" class="queue-list"></div>
     </section>
 
-    <section class="panel">
-      <div class="section-header">
-        <h2>Preview / Output</h2>
-        <p>Use preview to inspect the next six cycles without changing the saved queue. Use next to commit one iteration.</p>
-      </div>
-      <div id="results" class="results"></div>
-    </section>
+    <footer class="page-footer">
+      <h1>Hashtag rotation for <span>raw345ig</span></h1>
+      <p>Generate the next 5 hashtags from the ranked queue, with optional category focus or one forced custom tag.</p>
+    </footer>
   </main>
 
   <script src="/static/app.js"></script>

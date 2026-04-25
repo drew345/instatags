@@ -24,7 +24,6 @@ REFERENCE_SCORE_SPREAD = 10
 class TagRecord:
     rank: int
     tag: str
-    bucket: str
     categories: Tuple[str, ...]
     base_score: float
 
@@ -61,7 +60,6 @@ class HashtagSelector:
                     TagRecord(
                         rank=rank,
                         tag=row["tag"],
-                        bucket=row["bucket"],
                         categories=categories,
                         base_score=self._score_for_rank(rank),
                     )
@@ -201,7 +199,20 @@ class HashtagSelector:
             selected.append(tag)
             selected_details.append(detail)
 
-        return selected[:SELECTION_COUNT], selected_details[:SELECTION_COUNT]
+        return self._sort_selection_by_rank(selected[:SELECTION_COUNT], selected_details[:SELECTION_COUNT])
+
+    def _sort_selection_by_rank(self, selected: List[str], selected_details: List[Dict[str, object]]) -> Tuple[List[str], List[Dict[str, object]]]:
+        detail_by_tag = {str(detail["tag"]): detail for detail in selected_details}
+
+        def rank_for_tag(tag: str) -> int:
+            record = self.records_by_tag.get(tag)
+            if record:
+                return record.rank
+            return self.active_deck_size + 1
+
+        sorted_tags = sorted(selected, key=rank_for_tag)
+        sorted_details = [detail_by_tag[tag] for tag in sorted_tags if tag in detail_by_tag]
+        return sorted_tags, sorted_details
 
     def _normalize_categories(self, categories: Sequence[str]) -> List[str]:
         normalized = [category.strip().lower() for category in categories if category and category.strip()]
@@ -225,9 +236,8 @@ class HashtagSelector:
                 continue
             category_matches = len(set(record.categories) & set(categories))
             category_shift = category_matches * 3
-            bucket_shift = {"targeted": 1, "broad": 0, "reserve": -1}.get(record.bucket, 0)
-            priority_position = queue_index - category_shift - bucket_shift
-            effective_score = record.base_score + (category_matches * 0.08) + (0.02 if record.bucket == "targeted" else 0.0)
+            priority_position = queue_index - category_shift
+            effective_score = record.base_score + (category_matches * 0.08)
             scored.append(
                 {
                     "tag": record.tag,
@@ -235,7 +245,6 @@ class HashtagSelector:
                     "base_score": round(record.base_score, 3),
                     "effective_score": round(effective_score, 3),
                     "priority_position": priority_position,
-                    "bucket": record.bucket,
                     "categories": list(record.categories),
                     "category_matches": category_matches,
                     "queue_index": queue_index,

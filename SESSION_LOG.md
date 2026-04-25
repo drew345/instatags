@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-04-25
+- Turned the local selector into a deployed Google Apps Script web app so it can be used from phone/laptop without running the local Python server.
+- Created and connected the Apps Script project `InstaTags` with script ID `1ABG6UcS9rPUtqIhr7xwkTo8oiGCXvmaaojkW6YpSUjf3MGvTVTMYjzzk` via `.clasp.json`.
+- Wired the hosted app to Google Sheet `1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28`.
+- Apps Script deployment URL currently in use: `https://script.google.com/macros/s/AKfycbyZqHXt7itB4fnPlXWSEf-4sY8KU9qYySrrD5DmOV4Q4x7ZO_x6zbKMQhYNrAjql2b2FA/exec`.
+- The app created/updates Google Sheet tabs `ranked_tags`, `current_deck`, `state`, and `history`.
+- `ranked_tags` keeps the stable source list; `current_deck` shows the readable shuffled queue; `state` stores the authoritative JSON queue and iteration; `history` logs generated tag sets.
+- The hosted state was initialized from a baked 100-warmup queue, not the raw top-five-heavy ranked order.
+- Removed `bucket` as an active selector concept and from the hosted sheet output; categories and rank are now the meaningful fields.
+- Verified from the user's desktop/phone that Generate Next 5 returns five tags and updates `state`, `current_deck`, and `history`.
+- Known issue: Google's Apps Script banner may take too much screen space on phone. Compare deployment settings with the user's weight uploader next time, or consider GitHub Pages front-end plus Apps Script backend.
+- Next possible work: phone/home-screen icon and metadata, phone UI optimization after real use, history distribution summary after 10-20 uses, and later category/forced-tag design.
+
 ## 2026-04-24
 - Implemented the raw logistic S-curve rank score in `app/selector.py` using the user's preferred Excel-style form scaled by `active_deck_size`.
 - Added `active_deck_size` as a data-derived selector concept so the current 66-tag deck can grow or shrink without hard-coding the bottom rank.

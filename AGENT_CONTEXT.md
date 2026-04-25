@@ -1,15 +1,15 @@
 # Project Context
 
-Last Updated: 2026-04-24
+Last Updated: 2026-04-25
 
 ## Project
 instatags is a local project to build an automatic Instagram hashtag workflow for `raw345ig`, a senior male foreign model/actor in South Korea. The long-term output is a simple local website that accepts a short post description and returns exactly 5 useful hashtags.
 
 ## Current Goal
-Pause after a successful step-3 selector tuning session. The next work session should decide whether to turn the prototype into a true offline daily-use website or first define category focus / forced-tag behavior more carefully.
+Use the new hosted Google Apps Script version of instatags for real Instagram posts, then improve phone polish and optional category / forced-tag behavior based on actual use.
 
 ## Current Status
-The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, and a repeatable selector simulation report. `v1` is the widest practical superset of candidates to consider, including older manually supplied variants. `v2` is now treated as a near-final active ranked list with 66 active tags. The ranked CSVs were simplified to operational columns only: `rank`, `tag`, `bucket`, and `categories`. The selector uses `ranked_hashtags_v2.csv`, a saved queue state, optional category emphasis, optional forced tags, a logistic rank score called `base`, and score-derived random cooldown insertion. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
+The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, a repeatable selector simulation report, and a deployed Google Apps Script web app for phone/laptop use without a local Python server. `v1` is the widest practical superset of candidates to consider. `v2` is now treated as a near-final active ranked list with 66 active tags. The active hosted app stores shared queue state in a Google Sheet so phone and laptop use the same deck. The selector uses rank, categories, a logistic rank score called `base`, and score-derived random cooldown insertion. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
 
 ## Key Decisions
 - The project has 3 phases: research hashtags, rank hashtags, then build the website.
@@ -44,9 +44,25 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - Cooldown minimum is `active_deck_size * (0.5 - 0.375 * score)`, rounded up and clamped to the active deck.
 - Cooldown maximum is `active_deck_size * (1.5 - (7 / 6) * score)`, rounded down and capped at the active deck.
 - The actual cooldown position is a random integer between the min and max positions.
+- Bucket is no longer an active selector concept; categories and rank carry the useful meaning.
+- The hosted Apps Script app is now the day-to-day interface. The local FastAPI app remains useful for development previews.
+
+## Hosted Apps Script App
+- Spreadsheet: `https://docs.google.com/spreadsheets/d/1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28/edit`
+- Spreadsheet ID: `1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28`
+- Apps Script project name: `InstaTags`
+- Apps Script ID: `1ABG6UcS9rPUtqIhr7xwkTo8oiGCXvmaaojkW6YpSUjf3MGvTVTMYjzzk`
+- Current web app URL: `https://script.google.com/macros/s/AKfycbyZqHXt7itB4fnPlXWSEf-4sY8KU9qYySrrD5DmOV4Q4x7ZO_x6zbKMQhYNrAjql2b2FA/exec`
+- Google Sheet tabs managed by the app: `ranked_tags`, `current_deck`, `state`, `history`
+- `ranked_tags` is the original 66-tag ranked source list with columns `rank`, `tag`, `categories`.
+- `current_deck` is the readable current shuffled queue with columns `position`, `tag`, `rank`, `categories`.
+- `state` stores the authoritative shared queue as JSON and the current iteration.
+- `history` logs each Generate Next 5 use with timestamp, iteration, selected tags, and JSON.
+- The deployed app was tested from desktop and phone; Generate Next 5 updated `state`, `current_deck`, and `history`.
+- Google may show a large Apps Script security banner on phone. Next session should compare this with the user's weight uploader deployment and consider GitHub Pages front-end plus Apps Script backend if the banner is too intrusive.
 
 ## Important Files
-Current step-3 work should focus on `data/ranked_hashtags_v2.csv`, `data/selector_state.json`, `data/selector_simulation_counts.csv`, `app/selector.py`, `app/main.py`, `web/`, `docs/web-selector.md`, `scripts/run_app.py`, and `scripts/simulate_selector.py`. Collector and harvest files below are preserved historical context and should not be rerun or edited during normal selector tuning.
+Current step-3 work should focus on `apps-script/`, `.clasp.json`, `data/ranked_hashtags_v2.csv`, `data/selector_state.json`, `data/selector_simulation_counts.csv`, `app/selector.py`, `app/main.py`, `web/`, `docs/web-selector.md`, `scripts/run_app.py`, and `scripts/simulate_selector.py`. Collector and harvest files below are preserved historical context and should not be rerun or edited during normal selector tuning.
 - `README.md` — general project overview and current scope
 - `docs/step1-research-workflow.md` — step 1 collection rules and dataset logic
 - `docs/collector-usage.md` — how to run the local collector
@@ -75,12 +91,15 @@ Current step-3 work should focus on `data/ranked_hashtags_v2.csv`, `data/selecto
 - Two older-list variants, `#남자중년외국인` and `#남자시니어외국인`, were judged the most awkward and should remain in `v1` only, not be added to `v2`.
 - The selector still needs tuning by inspecting real successive outputs in the browser.
 - The current selector is working, but selection behavior should be reviewed visually before calling the logic stable.
+- Apps Script mobile banner may take too much phone screen space.
 
 ## Next Steps
-- Decide whether to polish the current local website into a true offline daily-use version.
-- Alternatively, define category focus and forced-tag behavior before UI polish.
-- Run `python scripts\run_app.py`, open `http://127.0.0.1:8000`, and use preview / next / reset to inspect selector behavior.
-- Rerun `python scripts\simulate_selector.py --csv-output data\selector_simulation_counts.csv` after selector logic changes.
+- Use the hosted Apps Script app for real posts and note phone UI friction.
+- Add phone/home-screen polish such as an icon and app metadata.
+- Investigate whether the Apps Script banner can be reduced by deployment settings; compare with the user's weight uploader.
+- If the Apps Script banner remains too intrusive, consider a GitHub Pages front-end with Apps Script as the stateful backend.
+- After 10-20 real uses, inspect `history` and optionally build a distribution summary.
+- Define category focus and forced-tag behavior after some real usage.
 - After the next tuning step, update memory and push changes to GitHub.
 
 ## Gotchas / Things to Avoid
