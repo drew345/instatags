@@ -6,10 +6,10 @@ Last Updated: 2026-04-26
 instatags is a local project to build an automatic Instagram hashtag workflow for `raw345ig`, a senior male foreign model/actor in South Korea. The long-term output is a simple local website that accepts a short post description and returns exactly 5 useful hashtags.
 
 ## Current Goal
-Use the new hosted Google Apps Script version of instatags for real Instagram posts, then improve phone polish and optional category / forced-tag behavior based on actual use.
+Use the hosted Google Apps Script version of instatags for real Instagram posts, then improve phone polish and category behavior based on actual use.
 
 ## Current Status
-The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, a repeatable selector simulation report, and a deployed Google Apps Script web app for phone/laptop use without a local Python server. `v1` is the widest practical superset of candidates to consider. `v2` is now treated as a near-final active ranked list with 66 active tags. The active hosted app stores shared queue state in a Google Sheet so phone and laptop use the same deck. The selector uses rank, categories, a logistic rank score called `base`, and score-derived random cooldown insertion. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
+The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, a repeatable selector simulation report, and a deployed Google Apps Script web app for phone/laptop use without a local Python server. `v1` is the widest practical superset of candidates to consider. `v2` is now treated as a near-final active ranked list with 66 active tags. The active hosted app stores shared queue state in a Google Sheet so phone and laptop use the same deck. The selector uses rank, categories, a logistic rank score called `base`, and score-derived random cooldown insertion. Forced tags are supported as custom post tags outside the ranked deck. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
 
 ## Key Decisions
 - The project has 3 phases: research hashtags, rank hashtags, then build the website.
@@ -48,13 +48,16 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - `modeling` was removed as too broad. The narrower `lookbook` category now marks clothes/fashion/fitting/lookbook work.
 - `lookbook` is currently assigned only to ranks `32`, `33`, `35`, `36`, and `37`: `#패션모델`, `#룩북모델`, `#외국인패션모델`, `#외국인피팅모델`, and `#룩북촬영`.
 - The hosted Apps Script app is now the day-to-day interface. The local FastAPI app remains useful for development previews.
+- Forced tags are custom post-specific tags, not ranked-deck tags. The field accepts space- or comma-separated entries, normalizes missing `#`, uses at most 5, outputs them first in typed order, and fills the remaining slots from the ranked deck.
+- Forced tags do not remove matching ranked tags, trigger cooldown, update queue position, or count as deck tags.
+- Category behavior is still the current mild queue bias. The future stronger category rule should fill remaining deck slots after any forced tags.
 
 ## Hosted Apps Script App
 - Spreadsheet: `https://docs.google.com/spreadsheets/d/1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28/edit`
 - Spreadsheet ID: `1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28`
 - Apps Script project name: `InstaTags`
 - Apps Script ID: `1ABG6UcS9rPUtqIhr7xwkTo8oiGCXvmaaojkW6YpSUjf3MGvTVTMYjzzk`
-- Current web app URL: `https://script.google.com/macros/s/AKfycbyZqHXt7itB4fnPlXWSEf-4sY8KU9qYySrrD5DmOV4Q4x7ZO_x6zbKMQhYNrAjql2b2FA/exec`
+- Current web app URL: `https://script.google.com/macros/s/AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew/exec`
 - Google Sheet tabs managed by the app: `ranked_tags`, `current_deck`, `state`, `history`
 - `ranked_tags` is the original 66-tag ranked source list with columns `rank`, `tag`, `categories`.
 - `current_deck` is the readable current shuffled queue with columns `position`, `tag`, `rank`, `categories`.
@@ -101,7 +104,7 @@ Current step-3 work should focus on `apps-script/`, `.clasp.json`, `data/ranked_
 - Investigate whether the Apps Script banner can be reduced by deployment settings; compare with the user's weight uploader.
 - If the Apps Script banner remains too intrusive, consider a GitHub Pages front-end with Apps Script as the stateful backend.
 - After 10-20 real uses, inspect `history` and optionally build a distribution summary.
-- Define category focus and forced-tag behavior after some real usage.
+- Define stronger category focus behavior after some real usage, likely using the remaining deck slots after forced tags.
 - After the next tuning step, update memory and push changes to GitHub.
 
 ## Gotchas / Things to Avoid

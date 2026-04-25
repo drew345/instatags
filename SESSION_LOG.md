@@ -7,19 +7,24 @@
 - Assigned `lookbook` only to ranks `32`, `33`, `35`, `36`, and `37`: `#패션모델`, `#룩북모델`, `#외국인패션모델`, `#외국인피팅모델`, and `#룩북촬영`.
 - Updated local selector data, local UI placeholder text, Apps Script `RANKED_TAGS`, and hosted Apps Script UI placeholder text.
 - Deployed Apps Script update `AKfycbxcdkSpoBrf09KlCi1F4kJJ-nY0u5mk0-zZG2vYscu6puTvFDBI99PV1TEMDswqLZELKg`.
+- Changed forced tags from a single optional tag into multiple custom post tags separated by spaces or commas.
+- Forced tags now normalize with leading `#`, appear first in typed order, count toward the total of 5, and never move or cooldown the ranked deck.
+- Updated the local FastAPI selector, local UI, hosted Apps Script selector, and hosted UI for the new `Forced Tags` behavior.
+- Redeployed the existing bookmarked Apps Script deployment `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew` as version `@6` with description `Support multiple forced tags`.
+- Verified local forced-tag behavior with temporary selector states, including no forced tags, two forced tags, five forced tags, six forced tags, and a forced tag matching an existing ranked tag.
 
 ## 2026-04-25
 - Turned the local selector into a deployed Google Apps Script web app so it can be used from phone/laptop without running the local Python server.
 - Created and connected the Apps Script project `InstaTags` with script ID `1ABG6UcS9rPUtqIhr7xwkTo8oiGCXvmaaojkW6YpSUjf3MGvTVTMYjzzk` via `.clasp.json`.
 - Wired the hosted app to Google Sheet `1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28`.
-- Apps Script deployment URL currently in use: `https://script.google.com/macros/s/AKfycbyZqHXt7itB4fnPlXWSEf-4sY8KU9qYySrrD5DmOV4Q4x7ZO_x6zbKMQhYNrAjql2b2FA/exec`.
+- Apps Script deployment URL used at that point: `https://script.google.com/macros/s/AKfycbyZqHXt7itB4fnPlXWSEf-4sY8KU9qYySrrD5DmOV4Q4x7ZO_x6zbKMQhYNrAjql2b2FA/exec`. The later bookmarked deployment is listed in the 2026-04-26 notes.
 - The app created/updates Google Sheet tabs `ranked_tags`, `current_deck`, `state`, and `history`.
 - `ranked_tags` keeps the stable source list; `current_deck` shows the readable shuffled queue; `state` stores the authoritative JSON queue and iteration; `history` logs generated tag sets.
 - The hosted state was initialized from a baked 100-warmup queue, not the raw top-five-heavy ranked order.
 - Removed `bucket` as an active selector concept and from the hosted sheet output; categories and rank are now the meaningful fields.
 - Verified from the user's desktop/phone that Generate Next 5 returns five tags and updates `state`, `current_deck`, and `history`.
 - Known issue: Google's Apps Script banner may take too much screen space on phone. Compare deployment settings with the user's weight uploader next time, or consider GitHub Pages front-end plus Apps Script backend.
-- Next possible work: phone/home-screen icon and metadata, phone UI optimization after real use, history distribution summary after 10-20 uses, and later category/forced-tag design.
+- Next possible work: phone/home-screen icon and metadata, phone UI optimization after real use, history distribution summary after 10-20 uses, and later category rule design.
 
 ## 2026-04-24
 - Implemented the raw logistic S-curve rank score in `app/selector.py` using the user's preferred Excel-style form scaled by `active_deck_size`.

@@ -54,6 +54,7 @@ function renderDetails(container, details) {
     row.appendChild(headline);
     const line = document.createElement("div");
     const parts = [];
+    if (detail.source === "forced") parts.push("forced");
     if (detail.rank) parts.push(`rank ${detail.rank}`);
     if (detail.categories && detail.categories.length) parts.push(detail.categories.join(" / "));
     line.className = "muted";
@@ -88,10 +89,10 @@ function renderSelections(results) {
     categories.className = "meta-pill";
     categories.textContent = `Focus: ${(result.categories || []).join(", ") || "none"}`;
     meta.appendChild(categories);
-    if (result.forced_tag) {
+    if (result.forced_tags && result.forced_tags.length) {
       const forced = document.createElement("div");
       forced.className = "meta-pill";
-      forced.textContent = `Forced: ${result.forced_tag}`;
+      forced.textContent = `Forced: ${result.forced_tags.join(" ")}`;
       meta.appendChild(forced);
     }
     card.appendChild(meta);

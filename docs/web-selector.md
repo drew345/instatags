@@ -17,15 +17,15 @@ Then open:
 - uses `data/ranked_hashtags_v2.csv` as the base ranked list
 - keeps a saved queue in `data/selector_state.json`
 - returns 5 hashtags per iteration
-- supports category emphasis such as `modeling`, `acting`, `drama`, and `senior`
-- supports an optional forced custom tag
+- supports category emphasis such as `acting`, `commercial`, `lookbook`, and `senior`
+- supports optional forced custom tags separated by spaces or commas
 - rotates tags with score-derived min/max cooldown ranges and a random insertion point
 
 ## Main controls
 
 - `Preview 6 Iterations`
   - shows the next 6 cycles without changing the saved queue
-- `Use Next 5`
+- `Generate Next 5`
   - commits one iteration and updates the saved queue
 - `Reset Queue`
   - returns the saved queue to the initial ranked order

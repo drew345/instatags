@@ -2,6 +2,7 @@ import csv
 import json
 import math
 import random
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -32,9 +33,10 @@ class TagRecord:
 class SelectionResult:
     iteration: int
     categories: List[str]
-    forced_tag: Optional[str]
+    forced_tags: List[str]
     selected_tags: List[str]
     selected_details: List[Dict[str, object]]
+    selected_deck_tags: List[str]
     queue_head: List[str]
 
 
@@ -135,18 +137,20 @@ class HashtagSelector:
         state = self._read_state()
         queue = list(state["queue"])
         iteration = int(state["iteration"])
+        forced_tags = self._normalize_forced_tags(forced_tag)
         previews: List[SelectionResult] = []
         for _ in range(iterations):
             iteration += 1
-            selected, details = self._select_tags(queue, categories, forced_tag)
-            queue = self._apply_cooldown(queue, selected, iteration)
+            selected, details, deck_tags = self._select_tags(queue, categories, forced_tags)
+            queue = self._apply_cooldown(queue, deck_tags, iteration)
             previews.append(
                 SelectionResult(
                     iteration=iteration,
                     categories=list(categories),
-                    forced_tag=forced_tag,
+                    forced_tags=forced_tags,
                     selected_tags=selected,
                     selected_details=details,
+                    selected_deck_tags=deck_tags,
                     queue_head=queue[:12],
                 )
             )
@@ -156,27 +160,28 @@ class HashtagSelector:
         state = self._read_state()
         queue = list(state["queue"])
         iteration = int(state["iteration"]) + 1
-        selected, details = self._select_tags(queue, categories, forced_tag)
-        new_queue = self._apply_cooldown(queue, selected, iteration)
+        forced_tags = self._normalize_forced_tags(forced_tag)
+        selected, details, deck_tags = self._select_tags(queue, categories, forced_tags)
+        new_queue = self._apply_cooldown(queue, deck_tags, iteration)
         self._write_state({"iteration": iteration, "queue": new_queue})
         return SelectionResult(
             iteration=iteration,
             categories=list(categories),
-            forced_tag=forced_tag,
+            forced_tags=forced_tags,
             selected_tags=selected,
             selected_details=details,
+            selected_deck_tags=deck_tags,
             queue_head=new_queue[:12],
         )
 
-    def _select_tags(self, queue: List[str], categories: Sequence[str], forced_tag: Optional[str]) -> Tuple[List[str], List[Dict[str, object]]]:
+    def _select_tags(self, queue: List[str], categories: Sequence[str], forced_tags: Sequence[str]) -> Tuple[List[str], List[Dict[str, object]], List[str]]:
         normalized_categories = self._normalize_categories(categories)
-        forced_tag = self._normalize_forced_tag(forced_tag)
         scored_queue = self._score_queue(queue, normalized_categories)
-        selected: List[str] = []
+        selected: List[str] = list(forced_tags)
+        selected_deck_tags: List[str] = []
         selected_details: List[Dict[str, object]] = []
 
-        if forced_tag:
-            selected.append(forced_tag)
+        for forced_tag in forced_tags:
             selected_details.append(
                 {
                     "tag": forced_tag,
@@ -194,12 +199,19 @@ class HashtagSelector:
             tag = detail["tag"]
             if tag in selected:
                 continue
+            if self._normalized_tag(tag) in {self._normalized_tag(selected_tag) for selected_tag in selected}:
+                continue
             if self._is_too_similar(tag, selected):
                 continue
             selected.append(tag)
+            selected_deck_tags.append(tag)
             selected_details.append(detail)
 
-        return self._sort_selection_by_rank(selected[:SELECTION_COUNT], selected_details[:SELECTION_COUNT])
+        sorted_deck_tags, sorted_deck_details = self._sort_selection_by_rank(selected_deck_tags, selected_details)
+        forced_details = [detail for detail in selected_details if detail.get("source") == "forced"]
+        selected_tags = list(forced_tags) + sorted_deck_tags
+        sorted_details = forced_details + sorted_deck_details
+        return selected_tags[:SELECTION_COUNT], sorted_details[:SELECTION_COUNT], sorted_deck_tags[: max(0, SELECTION_COUNT - len(forced_tags))]
 
     def _sort_selection_by_rank(self, selected: List[str], selected_details: List[Dict[str, object]]) -> Tuple[List[str], List[Dict[str, object]]]:
         detail_by_tag = {str(detail["tag"]): detail for detail in selected_details}
@@ -218,15 +230,26 @@ class HashtagSelector:
         normalized = [category.strip().lower() for category in categories if category and category.strip()]
         return normalized
 
-    def _normalize_forced_tag(self, forced_tag: Optional[str]) -> Optional[str]:
-        if not forced_tag:
-            return None
-        forced_tag = forced_tag.strip()
-        if not forced_tag:
-            return None
-        if not forced_tag.startswith("#"):
-            forced_tag = f"#{forced_tag}"
-        return forced_tag
+    def _normalize_forced_tags(self, forced_tags_text: Optional[str]) -> List[str]:
+        if not forced_tags_text:
+            return []
+
+        normalized: List[str] = []
+        seen = set()
+        for part in re.split(r"[,\s]+", forced_tags_text):
+            tag = part.strip()
+            if not tag:
+                continue
+            if not tag.startswith("#"):
+                tag = f"#{tag}"
+            key = self._normalized_tag(tag)
+            if key in seen:
+                continue
+            normalized.append(tag)
+            seen.add(key)
+            if len(normalized) >= SELECTION_COUNT:
+                break
+        return normalized
 
     def _score_queue(self, queue: Sequence[str], categories: Sequence[str]) -> List[Dict[str, object]]:
         scored: List[Dict[str, object]] = []
@@ -321,7 +344,8 @@ def serialize_selection(result: SelectionResult) -> Dict[str, object]:
     return {
         "iteration": result.iteration,
         "categories": result.categories,
-        "forced_tag": result.forced_tag,
+        "forced_tag": " ".join(result.forced_tags) if result.forced_tags else None,
+        "forced_tags": result.forced_tags,
         "selected_tags": result.selected_tags,
         "selected_details": result.selected_details,
         "queue_head": result.queue_head,

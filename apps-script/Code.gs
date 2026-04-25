@@ -44,8 +44,8 @@ function generateNext(categoriesText, forcedTag) {
   try {
     const state = readState();
     const iteration = state.iteration + 1;
-    const result = selectTags(state.queue, parseCategories(categoriesText), normalizeForcedTag(forcedTag));
-    const newQueue = applyCooldown(state.queue, result.selectedTags);
+    const result = selectTags(state.queue, parseCategories(categoriesText), normalizeForcedTags(forcedTag));
+    const newQueue = applyCooldown(state.queue, result.selectedDeckTags);
     writeState(getSpreadsheet(), { iteration: iteration, queue: newQueue });
     appendHistory(iteration, result.selectedTags);
     return {
@@ -64,15 +64,15 @@ function previewNext(iterations, categoriesText, forcedTag) {
   ensureInitialized();
   const count = Math.max(1, Math.min(Number(iterations) || 6, 12));
   const categories = parseCategories(categoriesText);
-  const normalizedForcedTag = normalizeForcedTag(forcedTag);
+  const normalizedForcedTags = normalizeForcedTags(forcedTag);
   const state = readState();
   let queue = state.queue.slice();
   let iteration = state.iteration;
   const results = [];
   for (let i = 0; i < count; i += 1) {
     iteration += 1;
-    const result = selectTags(queue, categories, normalizedForcedTag);
-    queue = applyCooldown(queue, result.selectedTags);
+    const result = selectTags(queue, categories, normalizedForcedTags);
+    queue = applyCooldown(queue, result.selectedDeckTags);
     results.push({
       iteration: iteration,
       selectedTags: result.selectedTags,
@@ -210,31 +210,32 @@ function appendHistory(iteration, selectedTags) {
   sheet.appendRow([new Date(), iteration, selectedTags.join(' '), JSON.stringify(selectedTags)]);
 }
 
-function selectTags(queue, categories, forcedTag) {
+function selectTags(queue, categories, forcedTags) {
   const scoredQueue = scoreQueue(queue, categories);
-  const selected = [];
+  const selected = forcedTags.slice(0, SELECTION_COUNT);
+  const selectedDeckTags = [];
   const selectedDetails = [];
-  if (forcedTag) {
-    selected.push(forcedTag);
+  selected.forEach(forcedTag => {
     selectedDetails.push({
       tag: forcedTag,
       source: 'forced',
       categories: [],
       rank: null
     });
-  }
+  });
   scoredQueue.some(detail => {
     if (selected.length >= SELECTION_COUNT) {
       return true;
     }
-    if (selected.indexOf(detail.tag) !== -1 || isTooSimilar(detail.tag, selected)) {
+    if (selected.indexOf(detail.tag) !== -1 || selected.some(tag => normalizeTag(tag) === normalizeTag(detail.tag)) || isTooSimilar(detail.tag, selected)) {
       return false;
     }
     selected.push(detail.tag);
+    selectedDeckTags.push(detail.tag);
     selectedDetails.push(detail);
     return false;
   });
-  return sortSelectionByRank(selected.slice(0, SELECTION_COUNT), selectedDetails.slice(0, SELECTION_COUNT));
+  return sortSelectionByRank(selected.slice(0, SELECTION_COUNT), selectedDetails.slice(0, SELECTION_COUNT), selectedDeckTags);
 }
 
 function scoreQueue(queue, categories) {
@@ -272,13 +273,19 @@ function scoreQueue(queue, categories) {
   return scored;
 }
 
-function sortSelectionByRank(selectedTags, selectedDetails) {
-  const detailsByTag = {};
-  selectedDetails.forEach(detail => detailsByTag[detail.tag] = detail);
-  const sortedTags = selectedTags.slice().sort((a, b) => rankForTag(a) - rankForTag(b));
+function sortSelectionByRank(selectedTags, selectedDetails, selectedDeckTags) {
+  const forcedDetails = selectedDetails.filter(detail => detail.source === 'forced');
+  const deckDetailsByTag = {};
+  selectedDetails
+    .filter(detail => detail.source === 'ranked')
+    .forEach(detail => deckDetailsByTag[detail.tag] = detail);
+  const forcedTags = forcedDetails.map(detail => detail.tag);
+  const sortedDeckTags = selectedDeckTags.slice().sort((a, b) => rankForTag(a) - rankForTag(b));
+  const sortedTags = forcedTags.concat(sortedDeckTags).slice(0, SELECTION_COUNT);
   return {
     selectedTags: sortedTags,
-    selectedDetails: sortedTags.filter(tag => detailsByTag[tag]).map(tag => detailsByTag[tag])
+    selectedDetails: forcedDetails.concat(sortedDeckTags.filter(tag => deckDetailsByTag[tag]).map(tag => deckDetailsByTag[tag])).slice(0, SELECTION_COUNT),
+    selectedDeckTags: sortedDeckTags.slice(0, Math.max(0, SELECTION_COUNT - forcedTags.length))
   };
 }
 
@@ -364,12 +371,24 @@ function parseCategories(categoriesText) {
     .filter(Boolean);
 }
 
-function normalizeForcedTag(forcedTag) {
-  const cleaned = String(forcedTag || '').trim();
-  if (!cleaned) {
-    return null;
-  }
-  return cleaned.charAt(0) === '#' ? cleaned : '#' + cleaned;
+function normalizeForcedTags(forcedTagsText) {
+  const pieces = String(forcedTagsText || '').split(/[,\s]+/);
+  const tags = [];
+  const seen = {};
+  pieces.some(piece => {
+    const cleaned = piece.trim();
+    if (!cleaned) {
+      return false;
+    }
+    const tag = cleaned.charAt(0) === '#' ? cleaned : '#' + cleaned;
+    const key = normalizeTag(tag);
+    if (!seen[key]) {
+      tags.push(tag);
+      seen[key] = true;
+    }
+    return tags.length >= SELECTION_COUNT;
+  });
+  return tags;
 }
 
 function round3(value) {
