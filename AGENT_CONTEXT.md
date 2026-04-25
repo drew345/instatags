@@ -1,6 +1,6 @@
 # Project Context
 
-Last Updated: 2026-04-25
+Last Updated: 2026-04-26
 
 ## Project
 instatags is a local project to build an automatic Instagram hashtag workflow for `raw345ig`, a senior male foreign model/actor in South Korea. The long-term output is a simple local website that accepts a short post description and returns exactly 5 useful hashtags.
@@ -29,7 +29,7 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - Tags can and should carry categories such as `modeling`, `acting`, `drama`, `casting`, `commercial`, `lifestyle`, and `chinese` so the selector can later emphasize a requested theme.
 - The selector's rank strength uses the raw logistic S-curve, and cooldown ranges are derived from that score.
 - The user currently considers the `v2` hashtag list itself close to final.
-- The active categories were simplified; the currently tracked categories in `v2` are `acting`, `chinese`, `commercial`, `drama`, `modeling`, `senior`, and `shortform`.
+- The active categories were simplified; the currently tracked categories in `v2` are `acting`, `chinese`, `commercial`, `drama`, `lookbook`, `senior`, and `shortform`.
 - The preferred China-facing tags are now `#短剧`, `#微短剧`, `#竖屏短剧`, `#外籍演员`, `#外国演员`, with `#外国资深演员` and `#竖屏剧` retained as lower-frequency supporting variants.
 - The China-facing tags were intentionally spaced through the ranked list at ranks `7`, `16`, `25`, `34`, `43`, `52`, and `60` so the strongest one can recur more often while the weakest stays low-frequency.
 - The current preferred ranking function is a raw logistic S-curve using rank `1` as the top tag. The user liked the Excel form `=1/(1+EXP((A2-30)/10))` and does not currently want exact normalization to `1.0` and `0.0`.
@@ -45,6 +45,8 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - Cooldown maximum is `active_deck_size * (1.5 - (7 / 6) * score)`, rounded down and capped at the active deck.
 - The actual cooldown position is a random integer between the min and max positions.
 - Bucket is no longer an active selector concept; categories and rank carry the useful meaning.
+- `modeling` was removed as too broad. The narrower `lookbook` category now marks clothes/fashion/fitting/lookbook work.
+- `lookbook` is currently assigned only to ranks `32`, `33`, `35`, `36`, and `37`: `#패션모델`, `#룩북모델`, `#외국인패션모델`, `#외국인피팅모델`, and `#룩북촬영`.
 - The hosted Apps Script app is now the day-to-day interface. The local FastAPI app remains useful for development previews.
 
 ## Hosted Apps Script App

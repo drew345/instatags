@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-04-26
+- Reviewed the active category set in `data/ranked_hashtags_v2.csv`.
+- Removed broad `modeling` as an active category.
+- Added narrow `lookbook` category for clothing/fashion/fitting/lookbook work.
+- Assigned `lookbook` only to ranks `32`, `33`, `35`, `36`, and `37`: `#패션모델`, `#룩북모델`, `#외국인패션모델`, `#외국인피팅모델`, and `#룩북촬영`.
+- Updated local selector data, local UI placeholder text, Apps Script `RANKED_TAGS`, and hosted Apps Script UI placeholder text.
+- Deployed Apps Script update `AKfycbxcdkSpoBrf09KlCi1F4kJJ-nY0u5mk0-zZG2vYscu6puTvFDBI99PV1TEMDswqLZELKg`.
+
 ## 2026-04-25
 - Turned the local selector into a deployed Google Apps Script web app so it can be used from phone/laptop without running the local Python server.
 - Created and connected the Apps Script project `InstaTags` with script ID `1ABG6UcS9rPUtqIhr7xwkTo8oiGCXvmaaojkW6YpSUjf3MGvTVTMYjzzk` via `.clasp.json`.
