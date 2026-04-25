@@ -13,6 +13,7 @@
 - Redeployed the existing bookmarked Apps Script deployment `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew` as version `@6` with description `Support multiple forced tags`.
 - Verified local forced-tag behavior with temporary selector states, including no forced tags, two forced tags, five forced tags, six forced tags, and a forced tag matching an existing ranked tag.
 - After a successful real use with three forced tags, changed the forced-tags placeholder to `벚꽃 커피숍` and redeployed the same bookmarked Apps Script deployment as version `@7`.
+- Saved the category-rule planning context without implementing it yet: future category focus should fill only the remaining deck slots after forced tags, aim for 3 category deck tags when possible, reduce that target when forced tags leave fewer slots, never affect forced tags, never cooldown inspected-but-unselected tags, and fall back to normal ranked queue tags if there are not enough category matches.
 
 ## 2026-04-25
 - Turned the local selector into a deployed Google Apps Script web app so it can be used from phone/laptop without running the local Python server.

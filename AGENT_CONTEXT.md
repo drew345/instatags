@@ -51,6 +51,29 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - Forced tags are custom post-specific tags, not ranked-deck tags. The field accepts space- or comma-separated entries, normalizes missing `#`, uses at most 5, outputs them first in typed order, and fills the remaining slots from the ranked deck.
 - Forced tags do not remove matching ranked tags, trigger cooldown, update queue position, or count as deck tags.
 - Category behavior is still the current mild queue bias. The future stronger category rule should fill remaining deck slots after any forced tags.
+- Forced tags were tested in real use with three custom tags and behaved correctly. The forced-tags placeholder was changed to the more likely everyday examples `벚꽃 커피숍`.
+- The current hosted deployment is version `@7` of `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew`, with description `Update forced tags placeholder`.
+
+## Category Rule Plan
+Category implementation is intentionally not done yet beyond the existing mild queue bias. The user wants the next category feature to be stronger and more predictable, but it should respect forced tags.
+
+Current intent:
+- A selected category should affect only deck-selected tags, not forced/custom tags.
+- Forced tags always consume output slots first.
+- The app should still output exactly 5 total hashtags.
+- The stronger category rule should try to fill the remaining deck slots with category-matching tags as much as practical.
+- The target category count should be based on remaining slots:
+  - 0 forced tags -> try for at least 3 category deck tags.
+  - 1 forced tag -> try for at least 3 category deck tags.
+  - 2 forced tags -> try for 3 category deck tags.
+  - 3 forced tags -> only 2 deck slots remain, so try for 2 category deck tags.
+  - 4 forced tags -> try for 1 category deck tag.
+  - 5 forced tags -> select no deck tags, so category does nothing.
+- If there are not enough available category tags to satisfy the target naturally, fill the rest from the normal ranked queue rather than failing.
+- Category selection should not cooldown tags that were inspected but not selected.
+- Candidate implementation idea: choose from the current queue without destroying order; selected deck tags get normal cooldown, skipped/nonselected tags stay in their relative queue positions.
+- One possible algorithm: take normal top queue candidates, count category matches, then search deeper in the current queue for the highest-position category tags needed to reach the target, replacing noncategory candidates as needed. Only the final selected deck tags are removed and reinserted via cooldown.
+- Testing should include combinations of 0-5 forced tags, selected category with sparse tags such as `lookbook`, selected category with broader tags such as `senior` or `acting`, and checks that `current_deck` advances only by selected deck tags.
 
 ## Hosted Apps Script App
 - Spreadsheet: `https://docs.google.com/spreadsheets/d/1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28/edit`
