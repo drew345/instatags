@@ -75,7 +75,8 @@
       color: var(--muted);
     }
 
-    input {
+    input,
+    select {
       width: 100%;
       padding: 13px 14px;
       border: 1px solid var(--line);
@@ -273,8 +274,17 @@
     <section class="panel">
       <div class="field-group">
         <label class="field">
-          <span>Focus Categories</span>
-          <input id="categories" type="text" placeholder="lookbook, acting, drama, senior">
+          <span>Focus Category</span>
+          <select id="categories">
+            <option value="">No focus</option>
+            <option value="acting">Acting</option>
+            <option value="chinese">Chinese</option>
+            <option value="commercial">Commercial</option>
+            <option value="drama">Drama</option>
+            <option value="lookbook">Lookbook</option>
+            <option value="senior">Senior</option>
+            <option value="shortform">Shortform</option>
+          </select>
         </label>
         <label class="field">
           <span>Forced Tag</span>
