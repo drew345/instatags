@@ -235,7 +235,99 @@ function selectTags(queue, categories, forcedTags) {
     selectedDetails.push(detail);
     return false;
   });
-  return sortSelectionByRank(selected.slice(0, SELECTION_COUNT), selectedDetails.slice(0, SELECTION_COUNT), selectedDeckTags);
+  const categoryAdjusted = applyCategoryTarget(
+    queue,
+    scoredQueue,
+    selectedDetails.filter(detail => detail.source === 'ranked'),
+    forcedTags,
+    categories
+  );
+  const adjustedDetails = selectedDetails.filter(detail => detail.source === 'forced').concat(categoryAdjusted.selectedDeckDetails);
+  return sortSelectionByRank(
+    forcedTags.concat(categoryAdjusted.selectedDeckTags).slice(0, SELECTION_COUNT),
+    adjustedDetails.slice(0, SELECTION_COUNT),
+    categoryAdjusted.selectedDeckTags
+  );
+}
+
+function applyCategoryTarget(queue, scoredQueue, selectedDeckDetails, forcedTags, categories) {
+  const deckSlots = Math.max(0, SELECTION_COUNT - forcedTags.length);
+  const targetCount = categories.length ? Math.min(3, deckSlots) : 0;
+  if (targetCount <= 0 || selectedDeckDetails.length === 0) {
+    return {
+      selectedDeckTags: selectedDeckDetails.map(detail => detail.tag),
+      selectedDeckDetails: selectedDeckDetails
+    };
+  }
+
+  const adjustedDetails = selectedDeckDetails.slice(0, deckSlots);
+  let categoryCount = adjustedDetails.filter(detail => detailMatchesCategories(detail, categories)).length;
+  if (categoryCount >= targetCount) {
+    return {
+      selectedDeckTags: adjustedDetails.map(detail => detail.tag),
+      selectedDeckDetails: adjustedDetails
+    };
+  }
+
+  const detailsByTag = {};
+  scoredQueue.forEach(detail => detailsByTag[detail.tag] = detail);
+  const queueCategoryDetails = queue
+    .filter(tag => detailsByTag[tag] && detailMatchesCategories(detailsByTag[tag], categories))
+    .map(tag => detailsByTag[tag]);
+
+  while (categoryCount < targetCount) {
+    const replacementIndex = lastNoncategoryIndex(adjustedDetails, categories);
+    if (replacementIndex === -1) {
+      break;
+    }
+
+    const contextTags = forcedTags.concat(
+      adjustedDetails
+        .filter((detail, index) => index !== replacementIndex)
+        .map(detail => detail.tag)
+    );
+    const candidate = nextCategoryReplacement(queueCategoryDetails, contextTags);
+    if (!candidate) {
+      break;
+    }
+
+    adjustedDetails[replacementIndex] = candidate;
+    categoryCount += 1;
+  }
+
+  return {
+    selectedDeckTags: adjustedDetails.map(detail => detail.tag),
+    selectedDeckDetails: adjustedDetails
+  };
+}
+
+function detailMatchesCategories(detail, categories) {
+  return Boolean(detail && detail.categories && detail.categories.some(category => categories.indexOf(category) !== -1));
+}
+
+function lastNoncategoryIndex(selectedDeckDetails, categories) {
+  for (let index = selectedDeckDetails.length - 1; index >= 0; index -= 1) {
+    if (!detailMatchesCategories(selectedDeckDetails[index], categories)) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function nextCategoryReplacement(categoryDetails, contextTags) {
+  const normalizedContext = {};
+  contextTags.forEach(tag => normalizedContext[normalizeTag(tag)] = true);
+  for (let index = 0; index < categoryDetails.length; index += 1) {
+    const detail = categoryDetails[index];
+    if (normalizedContext[normalizeTag(detail.tag)]) {
+      continue;
+    }
+    if (isTooSimilar(detail.tag, contextTags)) {
+      continue;
+    }
+    return detail;
+  }
+  return null;
 }
 
 function scoreQueue(queue, categories) {

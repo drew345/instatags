@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-05-15
+- Implemented the stronger category focus rule in `app/selector.py` and `apps-script/Code.gs`.
+- Category focus now targets up to 3 category deck tags, reduced by remaining deck slots after forced tags: 3 category deck tags with 0-2 forced tags, 2 with 3 forced tags, 1 with 4 forced tags, and none with 5 forced tags.
+- The selector first takes normal queue picks, then replaces noncategory deck picks from the end of that normal selection with the earliest available category matches deeper in the current queue.
+- Forced/custom tags remain outside the ranked deck, do not count as deck category tags, and do not get cooldown.
+- Added `tests/test_selector_category.py` covering lookbook focus, forced-tag slot reduction, existing category picks counting toward the target, and forced tags matching ranked tags staying outside the deck.
+- Verified the Apps Script source locally with Node VM against copied `data/selector_state.json`.
+- Pushed Apps Script source with `clasp push --force`, then the user updated the existing bookmarked deployment `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew` to version `@8` with description `Stronger Category Focus`.
+- Confirmed with `clasp deployments` that the active bookmarked deployment is `@8 - Stronger Category Focus`.
+
 ## 2026-04-26
 - Reviewed the active category set in `data/ranked_hashtags_v2.csv`.
 - Removed broad `modeling` as an active category.

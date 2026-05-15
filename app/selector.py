@@ -207,6 +207,16 @@ class HashtagSelector:
             selected_deck_tags.append(tag)
             selected_details.append(detail)
 
+        selected_deck_details = [detail for detail in selected_details if detail.get("source") == "ranked"]
+        selected_deck_tags, selected_deck_details = self._apply_category_target(
+            queue=queue,
+            scored_queue=scored_queue,
+            selected_deck_details=selected_deck_details,
+            forced_tags=forced_tags,
+            categories=normalized_categories,
+        )
+        selected_details = [detail for detail in selected_details if detail.get("source") == "forced"] + selected_deck_details
+
         sorted_deck_tags, sorted_deck_details = self._sort_selection_by_rank(selected_deck_tags, selected_details)
         forced_details = [detail for detail in selected_details if detail.get("source") == "forced"]
         selected_tags = list(forced_tags) + sorted_deck_tags
@@ -229,6 +239,79 @@ class HashtagSelector:
     def _normalize_categories(self, categories: Sequence[str]) -> List[str]:
         normalized = [category.strip().lower() for category in categories if category and category.strip()]
         return normalized
+
+    def _apply_category_target(
+        self,
+        queue: Sequence[str],
+        scored_queue: Sequence[Dict[str, object]],
+        selected_deck_details: List[Dict[str, object]],
+        forced_tags: Sequence[str],
+        categories: Sequence[str],
+    ) -> Tuple[List[str], List[Dict[str, object]]]:
+        deck_slots = max(0, SELECTION_COUNT - len(forced_tags))
+        target_count = min(3, deck_slots) if categories else 0
+        if target_count <= 0 or not selected_deck_details:
+            return [str(detail["tag"]) for detail in selected_deck_details], selected_deck_details
+
+        selected_deck_details = list(selected_deck_details[:deck_slots])
+        category_count = sum(1 for detail in selected_deck_details if self._detail_matches_categories(detail, categories))
+        if category_count >= target_count:
+            return [str(detail["tag"]) for detail in selected_deck_details], selected_deck_details
+
+        details_by_tag = {str(detail["tag"]): detail for detail in scored_queue}
+        queue_category_details = [
+            details_by_tag[tag]
+            for tag in queue
+            if tag in details_by_tag and self._detail_matches_categories(details_by_tag[tag], categories)
+        ]
+
+        while category_count < target_count:
+            replacement_index = self._last_noncategory_index(selected_deck_details, categories)
+            if replacement_index is None:
+                break
+
+            replacement_tag = str(selected_deck_details[replacement_index]["tag"])
+            context_tags = list(forced_tags) + [
+                str(detail["tag"])
+                for index, detail in enumerate(selected_deck_details)
+                if index != replacement_index
+            ]
+            candidate = self._next_category_replacement(queue_category_details, context_tags)
+            if candidate is None:
+                break
+
+            selected_deck_details[replacement_index] = candidate
+            if not self._detail_matches_categories(details_by_tag.get(replacement_tag, {}), categories):
+                category_count += 1
+
+        return [str(detail["tag"]) for detail in selected_deck_details], selected_deck_details
+
+    def _detail_matches_categories(self, detail: Dict[str, object], categories: Sequence[str]) -> bool:
+        detail_categories = detail.get("categories", [])
+        if not isinstance(detail_categories, list):
+            return False
+        return bool(set(detail_categories) & set(categories))
+
+    def _last_noncategory_index(self, selected_deck_details: Sequence[Dict[str, object]], categories: Sequence[str]) -> Optional[int]:
+        for index in range(len(selected_deck_details) - 1, -1, -1):
+            if not self._detail_matches_categories(selected_deck_details[index], categories):
+                return index
+        return None
+
+    def _next_category_replacement(
+        self,
+        category_details: Sequence[Dict[str, object]],
+        context_tags: Sequence[str],
+    ) -> Optional[Dict[str, object]]:
+        normalized_context = {self._normalized_tag(tag) for tag in context_tags}
+        for detail in category_details:
+            tag = str(detail["tag"])
+            if self._normalized_tag(tag) in normalized_context:
+                continue
+            if self._is_too_similar(tag, context_tags):
+                continue
+            return detail
+        return None
 
     def _normalize_forced_tags(self, forced_tags_text: Optional[str]) -> List[str]:
         if not forced_tags_text:

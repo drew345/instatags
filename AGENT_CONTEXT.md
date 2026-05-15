@@ -1,6 +1,6 @@
 # Project Context
 
-Last Updated: 2026-04-26
+Last Updated: 2026-05-15
 
 ## Project
 instatags is a local project to build an automatic Instagram hashtag workflow for `raw345ig`, a senior male foreign model/actor in South Korea. The long-term output is a simple local website that accepts a short post description and returns exactly 5 useful hashtags.
@@ -9,7 +9,7 @@ instatags is a local project to build an automatic Instagram hashtag workflow fo
 Use the hosted Google Apps Script version of instatags for real Instagram posts, then improve phone polish and category behavior based on actual use.
 
 ## Current Status
-The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, a repeatable selector simulation report, and a deployed Google Apps Script web app for phone/laptop use without a local Python server. `v1` is the widest practical superset of candidates to consider. `v2` is now treated as a near-final active ranked list with 66 active tags. The active hosted app stores shared queue state in a Google Sheet so phone and laptop use the same deck. The selector uses rank, categories, a logistic rank score called `base`, and score-derived random cooldown insertion. Forced tags are supported as custom post tags outside the ranked deck. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
+The project now has: step 1 harvest data, preserved harvest snapshots, protected must-keep hashtags, ranked lists `v1` and `v2`, a local selector website prototype, a repeatable selector simulation report, and a deployed Google Apps Script web app for phone/laptop use without a local Python server. `v1` is the widest practical superset of candidates to consider. `v2` is now treated as a near-final active ranked list with 66 active tags. The active hosted app stores shared queue state in a Google Sheet so phone and laptop use the same deck. The selector uses rank, categories, a logistic rank score called `base`, and score-derived random cooldown insertion. Forced tags are supported as custom post tags outside the ranked deck. Stronger category selection is implemented in `app/selector.py`, `apps-script/Code.gs`, and the hosted Apps Script deployment. The repo is backed up to GitHub at `https://github.com/drew345/instatags` on branch `main`.
 
 ## Key Decisions
 - The project has 3 phases: research hashtags, rank hashtags, then build the website.
@@ -50,18 +50,18 @@ The project now has: step 1 harvest data, preserved harvest snapshots, protected
 - The hosted Apps Script app is now the day-to-day interface. The local FastAPI app remains useful for development previews.
 - Forced tags are custom post-specific tags, not ranked-deck tags. The field accepts space- or comma-separated entries, normalizes missing `#`, uses at most 5, outputs them first in typed order, and fills the remaining slots from the ranked deck.
 - Forced tags do not remove matching ranked tags, trigger cooldown, update queue position, or count as deck tags.
-- Category behavior is still the current mild queue bias. The future stronger category rule should fill remaining deck slots after any forced tags.
+- Category behavior has been upgraded in local source from mild queue bias to a firmer target rule. When a focus category is selected, the selector first takes the normal queue picks, then replaces enough noncategory deck picks with the earliest available category matches to reach the target count when practical.
 - Forced tags were tested in real use with three custom tags and behaved correctly. The forced-tags placeholder was changed to the more likely everyday examples `벚꽃 커피숍`.
-- The current hosted deployment is version `@7` of `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew`, with description `Update forced tags placeholder`.
+- The current hosted deployment is version `@8` of `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew`, with description `Stronger Category Focus`.
 
 ## Category Rule Plan
-Category implementation is intentionally not done yet beyond the existing mild queue bias. The user wants the next category feature to be stronger and more predictable, but it should respect forced tags.
+Category implementation is done in local source and deployed to the hosted Apps Script app. The user wants category focus to be stronger and more predictable while respecting forced tags.
 
 Current intent:
 - A selected category should affect only deck-selected tags, not forced/custom tags.
 - Forced tags always consume output slots first.
 - The app should still output exactly 5 total hashtags.
-- The stronger category rule should try to fill the remaining deck slots with category-matching tags as much as practical.
+- The stronger category rule tries to fill the remaining deck slots with category-matching tags as much as practical.
 - The target category count should be based on remaining slots:
   - 0 forced tags -> try for at least 3 category deck tags.
   - 1 forced tag -> try for at least 3 category deck tags.
@@ -72,8 +72,8 @@ Current intent:
 - If there are not enough available category tags to satisfy the target naturally, fill the rest from the normal ranked queue rather than failing.
 - Category selection should not cooldown tags that were inspected but not selected.
 - Candidate implementation idea: choose from the current queue without destroying order; selected deck tags get normal cooldown, skipped/nonselected tags stay in their relative queue positions.
-- One possible algorithm: take normal top queue candidates, count category matches, then search deeper in the current queue for the highest-position category tags needed to reach the target, replacing noncategory candidates as needed. Only the final selected deck tags are removed and reinserted via cooldown.
-- Testing should include combinations of 0-5 forced tags, selected category with sparse tags such as `lookbook`, selected category with broader tags such as `senior` or `acting`, and checks that `current_deck` advances only by selected deck tags.
+- Implemented algorithm: take normal top queue candidates, count category matches, then search deeper in the current queue for the earliest category tags needed to reach the target, replacing noncategory candidates from the end of the normal deck selection. Only the final selected deck tags are removed and reinserted via cooldown.
+- Tests now cover `lookbook` with 0, 2, 3, 4, and 5 forced tags, a category tag already present in the normal picks, and a forced tag matching a ranked tag staying outside the deck.
 
 ## Hosted Apps Script App
 - Spreadsheet: `https://docs.google.com/spreadsheets/d/1xoEg3HIEAsMlGvIeAGs09ZzcNB32RssaaMc4Vrozs28/edit`
@@ -127,7 +127,7 @@ Current step-3 work should focus on `apps-script/`, `.clasp.json`, `data/ranked_
 - Investigate whether the Apps Script banner can be reduced by deployment settings; compare with the user's weight uploader.
 - If the Apps Script banner remains too intrusive, consider a GitHub Pages front-end with Apps Script as the stateful backend.
 - After 10-20 real uses, inspect `history` and optionally build a distribution summary.
-- Define stronger category focus behavior after some real usage, likely using the remaining deck slots after forced tags.
+- Use the hosted Apps Script app for real posts and watch whether focused categories, especially sparse `lookbook`, now feel strong enough in actual use.
 - After the next tuning step, update memory and push changes to GitHub.
 
 ## Gotchas / Things to Avoid
