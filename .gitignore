@@ -1,4 +1,5 @@
 __pycache__/
+.venv/
 playwright_state/
 .tmp/
 *.pyc
