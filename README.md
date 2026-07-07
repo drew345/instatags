@@ -17,6 +17,8 @@ The project is organized into three steps:
 
 We are now focused on step 3: tuning and testing the local selector website. The original harvest and ranking work are preserved as project history and source data, but normal work should not rerun the Instagram collector.
 
+The project is stable enough that local clones are optional. The hosted Apps Script website is the day-to-day interface, and the GitHub repository at `https://github.com/drew345/instatags` is the durable backup/source for the code, data, and memory files.
+
 ## Profile
 
 - Instagram handle: `raw345ig`

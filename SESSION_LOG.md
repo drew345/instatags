@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-07-08
+- Updated project memory nomenclature from legacy `AGENT_CONTEXT.md` to standard `AGENTS.md` plus `PROGRESS.md`.
+- Preserved the old full-context file at `archives/AGENT_CONTEXT-legacy-2026-07-08.md`.
+- Kept `AGENTS.md` concise for always-loadable standing context and moved live status, hosted-app details, selector rules, open problems, and next actions into `PROGRESS.md`.
+- No selector code, Apps Script source, ranked data, or hosted deployment was changed.
+
 ## 2026-05-15
 - Implemented the stronger category focus rule in `app/selector.py` and `apps-script/Code.gs`.
 - Category focus now targets up to 3 category deck tags, reduced by remaining deck slots after forced tags: 3 category deck tags with 0-2 forced tags, 2 with 3 forced tags, 1 with 4 forced tags, and none with 5 forced tags.
