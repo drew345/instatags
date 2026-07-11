@@ -1,6 +1,6 @@
 # Progress
 
-Last Updated: 2026-07-08
+Last Updated: 2026-07-11
 
 ## Current Status
 
@@ -77,6 +77,8 @@ If there are not enough available category tags to satisfy the target naturally,
 ## Memory Migration Note
 
 On 2026-07-08, project memory was converted from legacy `AGENT_CONTEXT.md` to standard `AGENTS.md` plus `PROGRESS.md`. The old full-context file is preserved at `archives/AGENT_CONTEXT-legacy-2026-07-08.md`.
+
+On 2026-07-11, that GitHub-side migration was reconciled with an independently prepared local cleanup. The unified memory keeps the newer GitHub status and archive while retaining the local cleanup's more explicit operating boundaries.
 
 ## Local Clone Note
 

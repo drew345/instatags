@@ -19,6 +19,8 @@ We are now focused on step 3: tuning and testing the local selector website. The
 
 The project is stable enough that local clones are optional. The hosted Apps Script website is the day-to-day interface, and the GitHub repository at `https://github.com/drew345/instatags` is the durable backup/source for the code, data, and memory files.
 
+For Codex/project-memory work, read `AGENTS.md`, `PROGRESS.md`, and `SESSION_LOG.md` first.
+
 ## Profile
 
 - Instagram handle: `raw345ig`
@@ -33,6 +35,9 @@ The project is stable enough that local clones are optional. The hosted Apps Scr
 
 - `docs/step1-research-workflow.md`: repeatable research process
 - `docs/web-selector.md`: how to run the local hashtag selector website
+- `AGENTS.md`: Codex operating instructions and boundaries
+- `PROGRESS.md`: current status, deployment details, and next steps
+- `SESSION_LOG.md`: dated project history
 - `data/seed_hashtags.csv`: starting hashtag list
 - `data/customer_search_intents.csv`: target customer search phrases
 - `data/hashtag_candidates.csv`: working research dataset

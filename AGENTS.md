@@ -1,6 +1,6 @@
-# Agent Context
+# instatags Agent Instructions
 
-Last Updated: 2026-07-08
+Last Updated: 2026-07-11
 
 ## Project
 
@@ -25,6 +25,24 @@ The active product is a hosted Google Apps Script web app backed by a Google She
 - Forced tags are post-specific custom tags. They do not remove matching ranked tags, trigger cooldown, update queue position, or count as deck tags.
 - Step 3 should stay local/app-script based and should not call an LLM.
 
+## Selector Model
+
+- Rank `1` is the top tag.
+- The preferred score curve is the raw logistic form `1/(1+EXP((rank-30)/10))`.
+- Ranking and cooldown remain conceptually separate, even though cooldown ranges use the score.
+- Cooldown is a 1-based insertion position against the active deck before selected tags are removed.
+- Cooldown minimum is `active_deck_size * (0.5 - 0.375 * score)`, rounded up and clamped to the active deck.
+- Cooldown maximum is `active_deck_size * (1.5 - (7 / 6) * score)`, rounded down and capped at the active deck.
+- Actual cooldown position is a random integer between the minimum and maximum.
+
+## Category Focus
+
+- Stronger category focus is implemented in both the Python and Apps Script selectors.
+- It affects only deck-selected tags and targets up to 3 category matches, reduced when forced tags leave fewer deck slots.
+- Only final selected deck tags receive cooldown; inspected but unselected tags retain their queue order.
+- When category matches are insufficient, remaining slots fall back to normal ranked queue tags.
+- Tests should cover 0-5 forced tags, sparse categories such as `lookbook`, broader categories, and queue advancement by selected deck tags only.
+
 ## Key Decisions
 
 - Customer discovery matters more than pure follower growth.
@@ -42,6 +60,12 @@ python scripts\run_app.py
 
 Then open `http://127.0.0.1:8000`.
 
+## Active Files
+
+- Selector and UI: `app/`, `apps-script/`, `web/`, `tests/`, and `scripts/simulate_selector.py`.
+- Active data: `data/ranked_hashtags_v2.csv`, `data/selector_state.json`, and `data/selector_simulation_counts.csv`.
+- Historical collector inputs and snapshots should generally be left alone.
+
 ## Where Memory Lives
 
 - `AGENTS.md` - concise always-loadable project context and standing instructions.
@@ -57,3 +81,4 @@ Then open `http://127.0.0.1:8000`.
 - Do not use `README.md` as the project memory source.
 - Do not trust raw PowerShell display for Korean or Chinese text; use UTF-8-aware reads/editors.
 - Do not reintroduce removed metadata columns such as `language`, `source_basis`, or `notes` unless there is a clear need.
+- Do not store Instagram or Google credentials, tokens, or private account material in repository files.

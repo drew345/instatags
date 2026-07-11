@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-07-11
+- Reconciled a dirty local project-memory cleanup with three newer commits from `origin/main` without rewriting remote history.
+- Preserved the pre-integration local state in an external backup, a stash, and branch `codex/pre-reconcile-local-20260711` before fast-forwarding `main`.
+- Unified the local cleanup's detailed operating boundaries with GitHub's newer category-focus implementation, tests, deployment status, and July 8 memory migration.
+- Retained the newer July 8 legacy archive as the sole fallback copy because it includes the May 15 selector and deployment updates.
+
 ## 2026-07-08
 - Updated project memory nomenclature from legacy `AGENT_CONTEXT.md` to standard `AGENTS.md` plus `PROGRESS.md`.
 - Preserved the old full-context file at `archives/AGENT_CONTEXT-legacy-2026-07-08.md`.
@@ -15,6 +21,13 @@
 - Verified the Apps Script source locally with Node VM against copied `data/selector_state.json`.
 - Pushed Apps Script source with `clasp push --force`, then the user updated the existing bookmarked deployment `AKfycbyOWzu3dvfYtkQzKtboGW1dIeups2OlBG_KFSnVoiAE6AHhcNEPGODVSKJjFohWTdlrew` to version `@8` with description `Stronger Category Focus`.
 - Confirmed with `clasp deployments` that the active bookmarked deployment is `@8 - Stronger Category Focus`.
+
+## 2026-07-03
+- Cleaned up project memory names and roles.
+- Added `AGENTS.md` for standing Codex instructions and project boundaries.
+- Added `PROGRESS.md` for current status, deployment details, next steps, and open problems.
+- Archived the legacy all-in-one `AGENT_CONTEXT.md` file under `archives/` for fallback only.
+- Updated `README.md` to point future Codex sessions at `AGENTS.md`, `PROGRESS.md`, and `SESSION_LOG.md`.
 
 ## 2026-04-26
 - Reviewed the active category set in `data/ranked_hashtags_v2.csv`.
